@@ -1,0 +1,101 @@
+# ============================================
+# Order Service Yapılandırması
+# ============================================
+
+server:
+  port: 8083
+
+spring:
+  application:
+    name: order-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order_db
+  
+  # RabbitMQ Yapılandırması
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        acknowledge-mode: auto
+        retry:
+          enabled: true
+          initial-interval: 1000
+          max-attempts: 3
+          multiplier: 2
+
+springdoc:
+  info:
+    title: Order Service API
+    description: Order Management Microservice - Sipariş yönetimi API dokümantasyonu
+    version: 1.0.0
+
+# Resilience4j Circuit Breaker Yapılandırması
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - feign.FeignException
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+          - java.util.concurrent.TimeoutException
+    instances:
+      productService:
+        baseConfig: default
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      inventoryService:
+        baseConfig: default
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      userService:
+        baseConfig: default
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+  
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 3s
+    instances:
+      productService:
+        baseConfig: default
+        timeoutDuration: 3s
+      inventoryService:
+        baseConfig: default
+        timeoutDuration: 3s
+      userService:
+        baseConfig: default
+        timeoutDuration: 3s
+
+# Feign Client Circuit Breaker Yapılandırması
+feign:
+  circuitbreaker:
+    enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 2000
+        readTimeout: 5000
+      product-service:
+        circuitBreakerName: productService
+        timeLimiterName: productService
+      inventory-service:
+        circuitBreakerName: inventoryService
+        timeLimiterName: inventoryService
+      user-service:
+        circuitBreakerName: userService
+        timeLimiterName: userService
+

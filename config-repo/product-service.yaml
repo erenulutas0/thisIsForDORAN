@@ -1,0 +1,19 @@
+# ============================================
+# Product Service Yapılandırması
+# ============================================
+
+server:
+  port: 8082
+
+spring:
+  application:
+    name: product-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/product_db
+
+springdoc:
+  info:
+    title: Product Service API
+    description: Product Management Microservice - Ürün yönetimi API dokümantasyonu
+    version: 1.0.0
+

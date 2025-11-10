@@ -1,0 +1,19 @@
+# ============================================
+# Inventory Service Yapılandırması
+# ============================================
+
+server:
+  port: 8084
+
+spring:
+  application:
+    name: inventory-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/inventory_db
+
+springdoc:
+  info:
+    title: Inventory Service API
+    description: Inventory Management Microservice - Stok yönetimi API dokümantasyonu
+    version: 1.0.0
+

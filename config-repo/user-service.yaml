@@ -1,0 +1,19 @@
+# ============================================
+# User Service Yapılandırması
+# ============================================
+
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/user_db
+
+springdoc:
+  info:
+    title: User Service API
+    description: User Management Microservice - Kullanıcı yönetimi API dokümantasyonu
+    version: 1.0.0
+

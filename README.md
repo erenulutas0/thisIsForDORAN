@@ -57,6 +57,7 @@ Bu proje, bir e-ticaret sistemi için tam özellikli microservices mimarisini i�
 - **Flyway** - Database Migration & Versioning
 - **Redis Cache** - Distributed Caching
 - **ELK Stack** - Centralized Logging & Monitoring
+- **WebSocket** - Real-time Order Tracking
 - **Lombok** - Boilerplate Code Reduction
 
 ## 📋 Özellikler
@@ -80,6 +81,7 @@ Bu proje, bir e-ticaret sistemi için tam özellikli microservices mimarisini i�
 - [x] Database Migration (Flyway)
 - [x] Caching (Redis Cache)
 - [x] Logging & Monitoring (ELK Stack)
+- [x] WebSocket (Real-time Order Tracking)
 - [x] Global Exception Handling
 - [x] Comprehensive Testing
 
@@ -90,6 +92,7 @@ Bu proje, bir e-ticaret sistemi için tam özellikli microservices mimarisini i�
 - [x] Database Migration (Flyway) ✅
 - [x] Caching (Redis Cache) ✅
 - [x] Logging & Monitoring (ELK Stack) ✅
+- [x] WebSocket (Real-time Order Tracking) ✅
 - [ ] Kubernetes Deployment
 - [ ] Security (JWT Authentication)
 - [ ] CI/CD Pipeline

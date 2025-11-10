@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Order Tracking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .status-box {
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background-color: #f9f9f9;
+        }
+        .status {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .update-item {
+            border-left: 4px solid #2196F3;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #e3f2fd;
+        }
+        .timestamp {
+            color: #666;
+            font-size: 12px;
+        }
+        .connection-status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .connected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .disconnected {
+            background-color: #f44336;
+            color: white;
+        }
+        input {
+            padding: 10px;
+            width: 300px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1976D2;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2/lib/stomp.min.js"></script>
+</head>
+<body>
+    <h1>🔌 Real-time Order Tracking</h1>
+    
+    <div id="connection-status" class="connection-status disconnected">
+        Disconnected
+    </div>
+    
+    <div>
+        <label for="order-id">Order ID:</label><br>
+        <input type="text" id="order-id" placeholder="Enter order ID (UUID)" value="">
+        <button onclick="connect()">Connect</button>
+        <button onclick="disconnect()">Disconnect</button>
+    </div>
+    
+    <div class="status-box">
+        <h2>Current Status</h2>
+        <div class="status" id="current-status">Not connected</div>
+    </div>
+    
+    <div>
+        <h2>Status Updates</h2>
+        <div id="updates"></div>
+    </div>
+
+    <script>
+        let socket = null;
+        let stompClient = null;
+        let currentOrderId = null;
+
+        function connect() {
+            const orderId = document.getElementById('order-id').value.trim();
+            
+            if (!orderId) {
+                alert('Please enter an order ID');
+                return;
+            }
+            
+            currentOrderId = orderId;
+            
+            // WebSocket bağlantısı
+            socket = new SockJS('http://localhost:8083/ws');
+            stompClient = Stomp.over(socket);
+            
+            // Debug mode (console'da mesajları göster)
+            stompClient.debug = null; // null = no debug, function = custom debug
+            
+            // Bağlan
+            stompClient.connect({}, 
+                function() {
+                    console.log('WebSocket connected');
+                    updateConnectionStatus(true);
+                    
+                    // Sipariş durumu güncellemelerini dinle
+                    stompClient.subscribe('/topic/order-updates/' + orderId, function(message) {
+                        const update = JSON.parse(message.body);
+                        handleOrderUpdate(update);
+                    });
+                    
+                    // Kullanıcının tüm siparişleri için (opsiyonel)
+                    // stompClient.subscribe('/topic/user-orders/{userId}', callback);
+                },
+                function(error) {
+                    console.error('WebSocket connection error:', error);
+                    updateConnectionStatus(false);
+                }
+            );
+        }
+
+        function disconnect() {
+            if (stompClient && stompClient.connected) {
+                stompClient.disconnect();
+                console.log('WebSocket disconnected');
+                updateConnectionStatus(false);
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusDiv = document.getElementById('connection-status');
+            if (connected) {
+                statusDiv.textContent = '✅ Connected';
+                statusDiv.className = 'connection-status connected';
+            } else {
+                statusDiv.textContent = '❌ Disconnected';
+                statusDiv.className = 'connection-status disconnected';
+            }
+        }
+
+        function handleOrderUpdate(update) {
+            console.log('Order update received:', update);
+            
+            // Current status güncelle
+            document.getElementById('current-status').textContent = update.newStatus;
+            
+            // Update listesine ekle
+            const updatesDiv = document.getElementById('updates');
+            const updateElement = document.createElement('div');
+            updateElement.className = 'update-item';
+            updateElement.innerHTML = `
+                <div class="timestamp">${new Date(update.timestamp).toLocaleString()}</div>
+                <div><strong>${update.message}</strong></div>
+                <div>Status: <span style="color: #f44336">${update.oldStatus}</span> → <span style="color: #4CAF50">${update.newStatus}</span></div>
+            `;
+            updatesDiv.insertBefore(updateElement, updatesDiv.firstChild);
+        }
+
+        // Sayfa kapanırken bağlantıyı kapat
+        window.addEventListener('beforeunload', function() {
+            disconnect();
+        });
+    </script>
+</body>
+</html>
+

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.microservices.inventory.Exception.DuplicateResourceException;
@@ -34,6 +36,7 @@ public class InventoryService {
     /**
      * Tüm stok kayıtlarını getir
      */
+    @Cacheable(value = "inventories", key = "'all'")
     public List<Inventory> getAllInventories() {
         return inventoryRepository.findAll();
     }
@@ -41,6 +44,7 @@ public class InventoryService {
     /**
      * ID'ye göre stok getir
      */
+    @Cacheable(value = "inventories", key = "#id.toString()")
     public Inventory getInventoryById(UUID id) {
         return inventoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventory", "id", id));
@@ -50,7 +54,9 @@ public class InventoryService {
      * Product ID'ye göre stok getir
      * EN ÖNEMLİ METHOD!
      * Order Service ve Product Service bu method'u kullanır
+     * Kısa TTL ile cache'lenir (stok bilgileri sık değişir)
      */
+    @Cacheable(value = "inventories", key = "'product:' + #productId.toString()")
     public Inventory getInventoryByProductId(UUID productId) {
         return inventoryRepository.findByProductId(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventory", "productId", productId));
@@ -60,6 +66,7 @@ public class InventoryService {
      * Kullanılabilir stok miktarını getir
      * quantity - reservedQuantity
      */
+    @Cacheable(value = "inventories", key = "'available:' + #productId.toString()")
     public Integer getAvailableQuantity(UUID productId) {
         Inventory inventory = getInventoryByProductId(productId);
         return inventory.getAvailableQuantity();
@@ -113,6 +120,7 @@ public class InventoryService {
      * Yeni stok kaydı oluştur
      * Product oluşturulduğunda çağrılır
      */
+    @CacheEvict(value = "inventories", allEntries = true)  // Tüm inventory cache'lerini temizle
     public Inventory createInventory(Inventory inventory) {
         // Duplicate check: Aynı productId'ye sahip inventory var mı?
         if (inventory.getProductId() != null && 
@@ -127,6 +135,7 @@ public class InventoryService {
      * Stok kaydını tamamen güncelle
      * Partial update yapıyor (null olmayan field'ları günceller)
      */
+    @CacheEvict(value = "inventories", key = "#id.toString() + ':*'", allEntries = true)  // İlgili tüm cache'leri temizle
     public Inventory updateInventory(UUID id, Inventory inventoryDetails) {
         Inventory inventory = getInventoryById(id);
         

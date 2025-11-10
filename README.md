@@ -55,6 +55,7 @@ Bu proje, bir e-ticaret sistemi için tam özellikli microservices mimarisini i�
 - **Spring Boot Actuator** - Monitoring & Health Checks
 - **Micrometer Tracing + Zipkin** - Distributed Tracing
 - **Flyway** - Database Migration & Versioning
+- **Redis Cache** - Distributed Caching
 - **Lombok** - Boilerplate Code Reduction
 
 ## 📋 Özellikler
@@ -76,6 +77,7 @@ Bu proje, bir e-ticaret sistemi için tam özellikli microservices mimarisini i�
 - [x] Distributed Tracing (Micrometer Tracing + Zipkin)
 - [x] Docker & Docker Compose
 - [x] Database Migration (Flyway)
+- [x] Caching (Redis Cache)
 - [x] Global Exception Handling
 - [x] Comprehensive Testing
 
@@ -84,6 +86,7 @@ Bu proje, bir e-ticaret sistemi için tam özellikli microservices mimarisini i�
 - [x] Distributed Tracing (Micrometer Tracing + Zipkin) ✅
 - [x] Docker & Docker Compose ✅
 - [x] Database Migration (Flyway) ✅
+- [x] Caching (Redis Cache) ✅
 - [ ] Kubernetes Deployment
 - [ ] Security (JWT Authentication)
 - [ ] Logging & Monitoring (ELK Stack)

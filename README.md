@@ -56,6 +56,7 @@ Bu proje, bir e-ticaret sistemi için tam özellikli microservices mimarisini i�
 - **Micrometer Tracing + Zipkin** - Distributed Tracing
 - **Flyway** - Database Migration & Versioning
 - **Redis Cache** - Distributed Caching
+- **ELK Stack** - Centralized Logging & Monitoring
 - **Lombok** - Boilerplate Code Reduction
 
 ## 📋 Özellikler
@@ -78,6 +79,7 @@ Bu proje, bir e-ticaret sistemi için tam özellikli microservices mimarisini i�
 - [x] Docker & Docker Compose
 - [x] Database Migration (Flyway)
 - [x] Caching (Redis Cache)
+- [x] Logging & Monitoring (ELK Stack)
 - [x] Global Exception Handling
 - [x] Comprehensive Testing
 
@@ -87,9 +89,9 @@ Bu proje, bir e-ticaret sistemi için tam özellikli microservices mimarisini i�
 - [x] Docker & Docker Compose ✅
 - [x] Database Migration (Flyway) ✅
 - [x] Caching (Redis Cache) ✅
+- [x] Logging & Monitoring (ELK Stack) ✅
 - [ ] Kubernetes Deployment
 - [ ] Security (JWT Authentication)
-- [ ] Logging & Monitoring (ELK Stack)
 - [ ] CI/CD Pipeline
 - [ ] Performance Testing
 

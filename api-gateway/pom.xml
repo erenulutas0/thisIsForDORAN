@@ -46,6 +46,20 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <!-- Spring Cloud Config Client -->
+        <!-- Centralized Configuration için -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+
+        <!-- Spring Cloud Bootstrap -->
+        <!-- Bootstrap.yaml için gerekli (Spring Boot 3) -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-bootstrap</artifactId>
+        </dependency>
+
         <!-- Micrometer Tracing (Distributed Tracing) -->
         <!-- Spring Boot 3'te Sleuth yerine Micrometer Tracing kullanılıyor -->
         <dependency>

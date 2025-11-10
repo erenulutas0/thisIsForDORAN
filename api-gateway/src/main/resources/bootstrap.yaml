@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    config:
+      uri: http://config-server:8888 # Config Server adresi (Docker container name)
+      fail-fast: true # Config Server'a bağlanamazsa uygulama başlamaz
+      retry:
+        initial-interval: 1000
+        max-attempts: 6
+        multiplier: 1.5
+

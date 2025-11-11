@@ -25,10 +25,29 @@ class CategoryChips extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
     final isSmallMobile = screenWidth < 450;
+    final isVerySmallPhone = screenWidth < 400; // iPhone SE gibi
     
     // Mobil için kısaltılmış kategori isimleri
     String getDisplayText(String category) {
-      if (isSmallMobile) {
+      if (isVerySmallPhone) {
+        // iPhone SE gibi çok küçük ekranlarda maksimum kısaltma
+        switch (category) {
+          case 'Home & Garden':
+            return 'Home';
+          case 'Electronics':
+            return 'Elec';
+          case 'Clothing':
+            return 'Cloth';
+          case 'Sports':
+            return 'Sport';
+          case 'Books':
+            return 'Books';
+          case 'Toys':
+            return 'Toys';
+          default:
+            return category.length > 4 ? category.substring(0, 4) : category;
+        }
+      } else if (isSmallMobile) {
         // Çok küçük ekranlarda tek harf veya kısaltma
         switch (category) {
           case 'Home & Garden':
@@ -68,10 +87,10 @@ class CategoryChips extends StatelessWidget {
     }
     
     return SizedBox(
-      height: isSmallMobile ? 40 : isMobile ? 42 : 50,
+      height: isVerySmallPhone ? 36 : isSmallMobile ? 40 : isMobile ? 42 : 50,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 16),
+        padding: EdgeInsets.symmetric(horizontal: isVerySmallPhone ? 6 : isMobile ? 8 : 16),
         itemCount: categories.length,
         itemBuilder: (context, index) {
           final category = categories[index];
@@ -79,7 +98,7 @@ class CategoryChips extends StatelessWidget {
           final displayText = getDisplayText(category);
 
           return Padding(
-            padding: EdgeInsets.only(right: isMobile ? 4 : 8),
+            padding: EdgeInsets.only(right: isVerySmallPhone ? 3 : isMobile ? 4 : 8),
             child: FilterChip(
               label: Text(
                 displayText,
@@ -97,11 +116,11 @@ class CategoryChips extends StatelessWidget {
                     ? Colors.white
                     : Theme.of(context).colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                fontSize: isSmallMobile ? 9 : isMobile ? 10 : 14,
+                fontSize: isVerySmallPhone ? 8 : isSmallMobile ? 9 : isMobile ? 10 : 14,
               ),
               padding: EdgeInsets.symmetric(
-                horizontal: isSmallMobile ? 6 : isMobile ? 8 : 16,
-                vertical: isSmallMobile ? 4 : isMobile ? 5 : 8,
+                horizontal: isVerySmallPhone ? 5 : isSmallMobile ? 6 : isMobile ? 8 : 16,
+                vertical: isVerySmallPhone ? 3 : isSmallMobile ? 4 : isMobile ? 5 : 8,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(isMobile ? 12 : 20),

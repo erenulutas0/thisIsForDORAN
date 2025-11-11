@@ -6,7 +6,7 @@ import '../../../../core/providers/product_provider.dart';
 import '../../../../core/providers/cart_provider.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../widgets/home_app_bar.dart';
-import '../widgets/category_chips.dart';
+import '../widgets/filter_dialog.dart';
 import '../widgets/product_grid.dart';
 import '../widgets/search_bar_widget.dart';
 import '../widgets/banner_carousel.dart';
@@ -20,7 +20,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
-  String _selectedCategory = 'All';
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -32,6 +31,25 @@ class _HomePageState extends State<HomePage> {
   void _loadProducts() {
     final productProvider = context.read<ProductProvider>();
     productProvider.fetchProducts();
+  }
+
+  void _showFilterDialog(BuildContext context, ProductProvider productProvider) {
+    showDialog(
+      context: context,
+      builder: (context) => FilterDialog(
+        selectedCategory: productProvider.selectedCategory,
+        minRating: productProvider.minRating,
+        sortBy: productProvider.sortBy,
+      ),
+    ).then((result) {
+      if (result != null) {
+        productProvider.applyFilters(
+          category: result['category'] as String?,
+          minRating: result['minRating'] as double?,
+          sortBy: result['sortBy'] as String?,
+        );
+      }
+    });
   }
 
   @override
@@ -144,16 +162,67 @@ class _HomePageState extends State<HomePage> {
               child: BannerCarousel(),
             ),
 
-            // Category Chips
+            // Filter Button
             SliverToBoxAdapter(
-              child: CategoryChips(
-                selectedCategory: _selectedCategory,
-                onCategorySelected: (category) {
-                  setState(() {
-                    _selectedCategory = category;
-                  });
-                  context.read<ProductProvider>().filterByCategory(category);
-                },
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width < 600 ? 12 : 16,
+                  vertical: 12,
+                ),
+                child: Consumer<ProductProvider>(
+                  builder: (context, productProvider, child) {
+                    final hasActiveFilters = productProvider.selectedCategory != null &&
+                            productProvider.selectedCategory != 'All' ||
+                        productProvider.minRating != null ||
+                        (productProvider.sortBy != null &&
+                            productProvider.sortBy != 'Default');
+
+                    return OutlinedButton.icon(
+                      onPressed: () => _showFilterDialog(context, productProvider),
+                      icon: Stack(
+                        children: [
+                          Icon(
+                            Icons.tune,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          if (hasActiveFilters)
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.error,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      label: Text(
+                        hasActiveFilters ? 'Filters Applied' : 'Filter',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: Theme.of(context).colorScheme.primary,
+                          width: 1.5,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
 
@@ -198,7 +267,11 @@ class _HomePageState extends State<HomePage> {
                   );
                 }
 
-                final products = _selectedCategory == 'All'
+                final products = productProvider.filteredProducts.isEmpty &&
+                        productProvider.selectedCategory == null &&
+                        productProvider.minRating == null &&
+                        (productProvider.sortBy == null ||
+                            productProvider.sortBy == 'Default')
                     ? productProvider.products
                     : productProvider.filteredProducts;
 

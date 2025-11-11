@@ -30,14 +30,24 @@ class Product {
       id: json['id']?.toString() ?? '',
       name: json['name'] ?? '',
       description: json['description'],
-      price: (json['price'] ?? 0).toDouble(),
+      price: json['price'] is int 
+          ? (json['price'] as int).toDouble()
+          : (json['price'] ?? 0).toDouble(),
       discountPrice: json['discountPrice']?.toDouble(),
       imageUrl: json['imageUrl'],
       category: json['category'],
       isActive: json['isActive'] ?? true,
-      stockQuantity: json['stockQuantity'],
+      stockQuantity: json['stockQuantity'] is int 
+          ? json['stockQuantity'] as int
+          : json['stockQuantity'] != null 
+              ? int.tryParse(json['stockQuantity'].toString())
+              : null,
       rating: json['rating']?.toDouble(),
-      reviewCount: json['reviewCount'],
+      reviewCount: json['reviewCount'] is int 
+          ? json['reviewCount'] as int
+          : json['reviewCount'] != null 
+              ? int.tryParse(json['reviewCount'].toString())
+              : null,
     );
   }
 

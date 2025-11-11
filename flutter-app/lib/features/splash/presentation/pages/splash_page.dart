@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -9,17 +10,28 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
+  static const String _introSeenKey = 'intro_seen';
+
   @override
   void initState() {
     super.initState();
-    _navigateToHome();
+    _checkIntroAndNavigate();
   }
 
-  void _navigateToHome() async {
+  Future<void> _checkIntroAndNavigate() async {
     await Future.delayed(const Duration(seconds: 2));
-    if (mounted) {
-      // Guest-First akışı: Onboarding'e yönlendir
+    
+    if (!mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final introSeen = prefs.getBool(_introSeenKey) ?? false;
+
+    if (introSeen) {
+      // Intro zaten görüldüyse direkt onboarding'e git
       context.go('/onboarding');
+    } else {
+      // İlk açılışsa intro'ya git
+      context.go('/intro');
     }
   }
 

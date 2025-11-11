@@ -406,6 +406,10 @@ file:///C:/Users/pc/AppData/Local/Pub/Cache/hosted/pub.dev/rxdart-0.28.0/lib/str
 file:///C:/Users/pc/AppData/Local/Pub/Cache/hosted/pub.dev/rxdart-0.28.0/lib/subjects.dart
 file:///C:/Users/pc/AppData/Local/Pub/Cache/hosted/pub.dev/rxdart-0.28.0/lib/transformers.dart
 file:///C:/Users/pc/AppData/Local/Pub/Cache/hosted/pub.dev/rxdart-0.28.0/lib/utils.dart
+file:///C:/Users/pc/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences-2.5.3/lib/shared_preferences.dart
+file:///C:/Users/pc/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences-2.5.3/lib/src/shared_preferences_async.dart
+file:///C:/Users/pc/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences-2.5.3/lib/src/shared_preferences_devtools_extension_data.dart
+file:///C:/Users/pc/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences-2.5.3/lib/src/shared_preferences_legacy.dart
 file:///C:/Users/pc/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences_platform_interface-2.4.1/lib/method_channel_shared_preferences.dart
 file:///C:/Users/pc/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences_platform_interface-2.4.1/lib/shared_preferences_async_platform_interface.dart
 file:///C:/Users/pc/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences_platform_interface-2.4.1/lib/shared_preferences_platform_interface.dart
@@ -773,6 +777,8 @@ file:///C:/Users/pc/OneDrive/Masa%C3%BCst%C3%BC/java-microservices/flutter-app/l
 file:///C:/Users/pc/OneDrive/Masa%C3%BCst%C3%BC/java-microservices/flutter-app/lib/features/home/presentation/widgets/home_app_bar.dart
 file:///C:/Users/pc/OneDrive/Masa%C3%BCst%C3%BC/java-microservices/flutter-app/lib/features/home/presentation/widgets/product_grid.dart
 file:///C:/Users/pc/OneDrive/Masa%C3%BCst%C3%BC/java-microservices/flutter-app/lib/features/home/presentation/widgets/search_bar_widget.dart
+file:///C:/Users/pc/OneDrive/Masa%C3%BCst%C3%BC/java-microservices/flutter-app/lib/features/intro/presentation/pages/intro_page.dart
+file:///C:/Users/pc/OneDrive/Masa%C3%BCst%C3%BC/java-microservices/flutter-app/lib/features/onboarding/presentation/pages/onboarding_page.dart
 file:///C:/Users/pc/OneDrive/Masa%C3%BCst%C3%BC/java-microservices/flutter-app/lib/features/order/presentation/pages/orders_page.dart
 file:///C:/Users/pc/OneDrive/Masa%C3%BCst%C3%BC/java-microservices/flutter-app/lib/features/product/presentation/pages/product_detail_page.dart
 file:///C:/Users/pc/OneDrive/Masa%C3%BCst%C3%BC/java-microservices/flutter-app/lib/features/profile/presentation/pages/addresses_page.dart

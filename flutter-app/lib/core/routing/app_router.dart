@@ -14,6 +14,7 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/onboarding/presentation/pages/onboarding_page.dart';
+import '../../features/intro/presentation/pages/intro_page.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -22,6 +23,10 @@ class AppRouter {
       GoRoute(
         path: '/splash',
         builder: (context, state) => const SplashPage(),
+      ),
+      GoRoute(
+        path: '/intro',
+        builder: (context, state) => const IntroPage(),
       ),
       GoRoute(
         path: '/onboarding',

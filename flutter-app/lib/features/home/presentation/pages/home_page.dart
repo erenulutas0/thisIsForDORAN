@@ -25,7 +25,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _loadProducts();
+    // Build tamamlandıktan sonra ürünleri yükle
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadProducts();
+    });
   }
 
   void _loadProducts() {

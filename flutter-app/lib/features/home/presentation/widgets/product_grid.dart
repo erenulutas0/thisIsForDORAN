@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/models/product_model.dart';
 import '../../../../core/utils/price_formatter.dart';
+import '../../../../core/providers/cart_provider.dart';
 
 class ProductGrid extends StatelessWidget {
   final List<Product> products;
@@ -30,17 +32,17 @@ class ProductGrid extends StatelessWidget {
       // iPhone SE gibi çok küçük ekranlar (375px)
       horizontalPadding = 12.0; // Yanlara nefes alacak boşluk
       gridSpacing = 8.0; // Ürünler arası boşluk
-      childAspectRatio = 0.78; // Daha kompakt, daha fazla ürün görünsün
+      childAspectRatio = 0.68; // Boş alanı kaldırmak için daha kompakt
     } else if (isMobile) {
       // Normal mobil (400-600px)
       horizontalPadding = 16.0;
       gridSpacing = 10.0;
-      childAspectRatio = 0.85; // Daha kompakt, daha fazla ürün görünsün
+      childAspectRatio = 0.72; // Boş alanı kaldırmak için daha kompakt
     } else {
       // Tablet/Desktop
       horizontalPadding = 20.0;
       gridSpacing = 16.0;
-      childAspectRatio = 0.92; // Daha kompakt, daha fazla ürün görünsün
+      childAspectRatio = 0.76; // Boş alanı kaldırmak için daha kompakt
     }
     
     return SliverPadding(
@@ -68,7 +70,7 @@ class ProductGrid extends StatelessWidget {
   }
 }
 
-class _ProductCard extends StatelessWidget {
+class _ProductCard extends StatefulWidget {
   final Product product;
   final bool isMobile;
   final bool isSmallPhone;
@@ -80,13 +82,103 @@ class _ProductCard extends StatelessWidget {
   });
 
   @override
+  State<_ProductCard> createState() => _ProductCardState();
+}
+
+class _ProductCardState extends State<_ProductCard>
+    with TickerProviderStateMixin {
+  bool _showAddedFeedback = false;
+  bool _isFavorite = false;
+  late AnimationController _addToCartAnimationController;
+  late AnimationController _favoriteAnimationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _favoriteScaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _addToCartAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _favoriteAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(parent: _addToCartAnimationController, curve: Curves.easeOut),
+    );
+    _favoriteScaleAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
+      CurvedAnimation(parent: _favoriteAnimationController, curve: Curves.elasticOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _addToCartAnimationController.dispose();
+    _favoriteAnimationController.dispose();
+    super.dispose();
+  }
+
+  void _handleFavorite() {
+    setState(() {
+      _isFavorite = !_isFavorite;
+    });
+    
+    // Güzel animasyon efekti
+    _favoriteAnimationController.forward().then((_) {
+      _favoriteAnimationController.reverse();
+    });
+  }
+
+  void _handleAddToCart(BuildContext context) {
+    final cartProvider = context.read<CartProvider>();
+    cartProvider.addItem(widget.product);
+    
+    // Animasyon
+    _addToCartAnimationController.forward().then((_) {
+      _addToCartAnimationController.reverse();
+    });
+    
+    // Geri bildirim göster
+    setState(() {
+      _showAddedFeedback = true;
+    });
+    
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _showAddedFeedback = false;
+        });
+      }
+    });
+    
+    // Snackbar göster
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.white),
+            SizedBox(width: 8),
+            Text('Added to Cart'),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push('/product/${product.id}'),
+      onTap: () => context.push('/product/${widget.product.id}'),
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(isSmallPhone ? 10 : isMobile ? 12 : 16),
+          borderRadius: BorderRadius.circular(widget.isSmallPhone ? 10 : widget.isMobile ? 12 : 16),
           border: Border.all(
             color: Theme.of(context).dividerColor,
             width: 1,
@@ -102,7 +194,11 @@ class _ProductCard extends StatelessWidget {
           ],
         ),
         clipBehavior: Clip.antiAlias, // İçeriği kes
-        child: _buildCompactCard(context),
+        child: Stack(
+          children: [
+            _buildCompactCard(context),
+          ],
+        ),
       ),
     );
   }
@@ -114,15 +210,15 @@ class _ProductCard extends StatelessWidget {
       children: [
         // Product Image - Küçültülmüş resim
         AspectRatio(
-          aspectRatio: isSmallPhone ? 1.3 : isMobile ? 1.4 : 1.5, // Daha küçük resim oranı
+          aspectRatio: widget.isSmallPhone ? 1.3 : widget.isMobile ? 1.4 : 1.5, // Daha küçük resim oranı
           child: ClipRRect(
             borderRadius: BorderRadius.vertical(
-              top: Radius.circular(isSmallPhone ? 10 : isMobile ? 12 : 16),
+              top: Radius.circular(widget.isSmallPhone ? 10 : widget.isMobile ? 12 : 16),
             ),
             child: Stack(
               children: [
                 CachedNetworkImage(
-                  imageUrl: product.imageUrl ?? 'https://via.placeholder.com/200',
+                  imageUrl: widget.product.imageUrl ?? 'https://via.placeholder.com/200',
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,
@@ -144,26 +240,75 @@ class _ProductCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Favorite Button
+                // Add to Cart Button - Sol üst köşe (Mor, şık ve küçük)
                 Positioned(
-                  top: 4,
-                  right: 4,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.favorite_border,
-                        size: isSmallPhone ? 10 : isMobile ? 12 : 14,
-                        color: Theme.of(context).colorScheme.onSurface,
+                  top: 6,
+                  left: 6,
+                  child: ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => _handleAddToCart(context),
+                        borderRadius: BorderRadius.circular(50),
+                        customBorder: const CircleBorder(),
+                        child: Container(
+                          width: widget.isSmallPhone ? 32 : widget.isMobile ? 36 : 40,
+                          height: widget.isSmallPhone ? 32 : widget.isMobile ? 36 : 40,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary, // Mor renk (sayfa renkleriyle uyumlu)
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.add,
+                            color: Colors.white,
+                            size: widget.isSmallPhone ? 18 : widget.isMobile ? 20 : 22,
+                          ),
+                        ),
                       ),
-                      onPressed: () {},
-                      padding: EdgeInsets.zero,
-                      constraints: BoxConstraints(
-                        minWidth: isSmallPhone ? 18 : isMobile ? 20 : 24,
-                        minHeight: isSmallPhone ? 18 : isMobile ? 20 : 24,
+                    ),
+                  ),
+                ),
+                // Favorite Button - Sağ üst köşe (Animasyonlu kırmızı)
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: ScaleTransition(
+                    scale: _favoriteScaleAnimation,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _handleFavorite,
+                        borderRadius: BorderRadius.circular(50),
+                        customBorder: const CircleBorder(),
+                        child: Container(
+                          width: widget.isSmallPhone ? 32 : widget.isMobile ? 36 : 40,
+                          height: widget.isSmallPhone ? 32 : widget.isMobile ? 36 : 40,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface.withOpacity(0.95),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            _isFavorite ? Icons.favorite : Icons.favorite_border,
+                            size: widget.isSmallPhone ? 18 : widget.isMobile ? 20 : 22,
+                            color: _isFavorite ? Colors.red : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -174,132 +319,62 @@ class _ProductCard extends StatelessWidget {
         ),
 
         // Product Info - Kompakt padding, daha fazla ürün görünsün
-        Padding(
-          padding: EdgeInsets.fromLTRB(
-            isSmallPhone ? 8 : isMobile ? 10 : 12, // Sol padding optimize edildi
-            isSmallPhone ? 4 : isMobile ? 5 : 6, // Üst padding azaltıldı
-            isSmallPhone ? 6 : isMobile ? 8 : 10,
-            isSmallPhone ? 4 : isMobile ? 5 : 6, // Alt padding azaltıldı
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min, // Minimum alan kullan
-            children: [
-              // Category Badge - Daha belirgin
-              if (product.category != null)
-                Padding(
-                  padding: EdgeInsets.only(bottom: isSmallPhone ? 2 : isMobile ? 3 : 4), // Boşluk azaltıldı
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isSmallPhone ? 5 : isMobile ? 6 : 7,
-                      vertical: isSmallPhone ? 2 : 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Text(
-                      product.category!.length > (isSmallPhone ? 4 : isMobile ? 5 : 6)
-                          ? product.category!.substring(0, isSmallPhone ? 4 : isMobile ? 5 : 6) + '...'
-                          : product.category!,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontSize: isSmallPhone ? 8 : isMobile ? 9 : 10,
-                        fontWeight: FontWeight.w600, // Daha kalın
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-              // Product Name - Kalın başlık
+        Flexible(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              widget.isSmallPhone ? 8 : widget.isMobile ? 10 : 12, // Sol padding optimize edildi
+              widget.isSmallPhone ? 4 : widget.isMobile ? 5 : 6, // Üst padding azaltıldı
+              widget.isSmallPhone ? 6 : widget.isMobile ? 8 : 10,
+              widget.isSmallPhone ? 4 : widget.isMobile ? 5 : 6, // Alt padding normal
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min, // Minimum alan kullan
+              children: [
+              // Product Name - Düzeltilmiş yazı stili
               Text(
-                product.name,
+                widget.product.name,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontSize: isSmallPhone ? 11 : isMobile ? 12 : 13,
-                  fontWeight: FontWeight.bold, // Bold yapıldı
-                  height: 1.2,
+                  fontSize: widget.isSmallPhone ? 13 : widget.isMobile ? 14 : 15,
+                  fontWeight: FontWeight.w600,
+                  height: 1.3,
+                  letterSpacing: 0.1,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              // Description - Normal font, belirgin ayrım
-              if (product.description != null && product.description!.isNotEmpty) ...[
-                SizedBox(height: isSmallPhone ? 2 : isMobile ? 3 : 4), // Boşluk azaltıldı
+              // Description - Düzeltilmiş yazı stili
+              if (widget.product.description != null && widget.product.description!.isNotEmpty && !widget.isSmallPhone) ...[
+                SizedBox(height: widget.isSmallPhone ? 3 : widget.isMobile ? 4 : 5),
                 Text(
-                  product.description!,
+                  widget.product.description!,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontSize: isSmallPhone ? 9 : isMobile ? 10 : 11,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), // Daha açık - ayrım için
-                    fontWeight: FontWeight.normal, // Normal font - başlıktan ayrım
-                    height: 1.3,
+                    fontSize: widget.isSmallPhone ? 10 : widget.isMobile ? 11 : 12,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
+                    fontWeight: FontWeight.w400,
+                    height: 1.4,
+                    letterSpacing: 0.2,
                   ),
-                  maxLines: isSmallPhone ? 1 : 2, // Küçük ekranlarda 1 satır, diğerlerinde 2
+                  maxLines: 2, // 2 satır göster - daha okunabilir
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-              // Price and Add Button - Kompakt düzen, kartın altına yakın
-              SizedBox(height: isSmallPhone ? 4 : isMobile ? 5 : 6), // Boşluk azaltıldı - kartın altına yakın
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Price - Daha belirgin renk
-                  Flexible(
-                    child: Text(
-                      PriceFormatter.format(product.discountPrice ?? product.price),
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: const Color(0xFF2196F3), // Açık mavi - daha belirgin
-                        fontWeight: FontWeight.bold,
-                        fontSize: isSmallPhone ? 13 : isMobile ? 14 : 16,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  SizedBox(width: isSmallPhone ? 8 : isMobile ? 10 : 12), // Daha fazla boşluk
-                  // Add Button - 32x32 görsel, 44x44 touch target (padding ile)
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {},
-                      borderRadius: BorderRadius.circular(isSmallPhone ? 8 : isMobile ? 9 : 10),
-                      child: Container(
-                        width: 44, // Touch target 44x44 dp
-                        height: 44,
-                        alignment: Alignment.center,
-                        child: Container(
-                          width: 32, // Görsel boyut 32x32
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
-                            borderRadius: BorderRadius.circular(isSmallPhone ? 6 : isMobile ? 7 : 8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          alignment: Alignment.center,
-                          child: Icon(
-                            Icons.add,
-                            color: Colors.white,
-                            size: isSmallPhone ? 16 : isMobile ? 18 : 20, // Daha küçük ikon
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              // Price - Düzeltilmiş yazı stili
+              SizedBox(height: widget.isSmallPhone ? 6 : widget.isMobile ? 8 : 10),
+              Text(
+                PriceFormatter.format(widget.product.discountPrice ?? widget.product.price),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.primary, // Mor renk (sayfa renkleriyle uyumlu)
+                  fontWeight: FontWeight.w700,
+                  fontSize: widget.isSmallPhone ? 15 : widget.isMobile ? 16 : 18,
+                  letterSpacing: 0.2,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
+        ),
         ),
       ],
     );
